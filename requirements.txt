@@ -1,0 +1,7 @@
+go==1.21
+github.com/gorilla/mux
+github.com/gorilla/websocket
+github.com/spf13/viper
+github.com/streadway/amqp
+github.com/jinzhu/gorm
+github.com/go-sql-driver/mysql
