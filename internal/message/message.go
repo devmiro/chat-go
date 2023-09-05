@@ -1,6 +1,7 @@
 package message
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -10,6 +11,12 @@ type Message struct {
 	RoomName  string
 	Content   string
 	Timestamp time.Time
+}
+
+// Error implements error.
+func (*Message) Error() string {
+	fmt.Println("Message error: Message is not valid")
+	return "Message error: Message is not valid"
 }
 
 type MessageService struct {

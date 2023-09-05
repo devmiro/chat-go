@@ -53,7 +53,7 @@ func (s *ChatServer) handleChat(w http.ResponseWriter, r *http.Request) {
 	roomName := vars["roomName"]
 
 	if _, ok := s.chatRooms[roomName]; !ok {
-		// Create a new chat room if it doesn't exist\\\\\\\ZZZZZZZXXZ
+		// Create a new chat room if it doesn't exist
 		s.chatRooms[roomName] = &ChatRoom{
 			Name:     roomName,
 			Messages: make([]*message.Message, 0),
@@ -83,7 +83,11 @@ func (s *ChatServer) handleChat(w http.ResponseWriter, r *http.Request) {
 
 		// Handle commands, e.g., /stock=stock_code
 		if messageContent[0] == '/' {
-			response := s.bot.RespondToCommand(messageContent)
+			response, err := s.bot.RespondToCommand(messageContent, s.messageService)
+			if err != nil {
+				log.Println(err)
+				return
+			}
 			// Broadcast the bot's response to all clients
 			for client := range room.Clients {
 				err := client.WriteMessage(messageType, []byte(response))
@@ -113,7 +117,7 @@ func (s *ChatServer) handleChat(w http.ResponseWriter, r *http.Request) {
 
 func (s *ChatServer) getChatMessages(roomName string, limit int) []*message.Message {
 	// Get recent chat messages for a room
-	messages := messageService.GetRoomMessages(roomName, limit)
+	messages := s.messageService.GetRoomMessages(roomName, limit)
 	return messages
 }
 
@@ -140,7 +144,7 @@ func (s *ChatServer) serveStaticFiles() {
 }
 
 func (s *ChatServer) serveHTMLTemplates() {
-	tpl := template.Must(template.ParseFiles("web/templates/index.html"))
+	tpl := template.Must(template.ParseFiles("D:/workspace/chat-go/web/templates/index.html"))
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		roomName := vars["roomName"]
@@ -160,6 +164,6 @@ func (s *ChatServer) Start() {
 	s.serveStaticFiles()
 	s.serveHTMLTemplates()
 
-	http.Handle("/", r)
+	//http.Handle("/", r)
 	http.ListenAndServe(":8080", nil)
 }
