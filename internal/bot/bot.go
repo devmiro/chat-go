@@ -14,7 +14,7 @@ func NewChatBot() *ChatBot {
 	return &ChatBot{}
 }
 
-func (b *ChatBot) RespondToCommand(command string, messageService *message.MessageService) (string, error) {
+func (b *ChatBot) RespondToCommand(command string, roomName string, messageService *message.MessageService) (string, error) {
 	// Check if the message is a command
 	if strings.HasPrefix(command, "/stock=") {
 		// Extract the stock code from the command
@@ -30,7 +30,7 @@ func (b *ChatBot) RespondToCommand(command string, messageService *message.Messa
 		responseMessage := "StockBot" + ": " + quote
 
 		// Post the response message to the chatroom using messageService
-		err = messageService.SendMessage(99, "", responseMessage)
+		err = messageService.SendMessage(99, roomName, responseMessage)
 		if err != nil {
 			return "", err
 		}
