@@ -1,15 +1,45 @@
 package bot
 
 import (
+	"chat-go/internal/message"
 	"encoding/csv"
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 type ChatBot struct{}
 
 func NewChatBot() *ChatBot {
 	return &ChatBot{}
+}
+
+func (b *ChatBot) RespondToCommand(command string, user string, room *message.RoomName, messageService *message.MessageService) (string, error) {
+	// Check if the message is a command
+	if strings.HasPrefix(command, "/stock=") {
+		// Extract the stock code from the command
+		stockCode := strings.TrimPrefix(command, "/stock=")
+
+		// Call the GetStockQuote method to fetch the stock quote
+		quote, err := b.GetStockQuote(stockCode)
+		if err != nil {
+			return "", err
+		}
+
+		// Create a response message
+		responseMessage := user + ": " + quote
+
+		// Post the response message to the chatroom using messageService
+		err = messageService.SendMessage(99, responseMessage)
+		if err != nil {
+			return "", err
+		}
+
+		return responseMessage, nil
+	}
+
+	// If it's not a recognized command, return an empty response
+	return "", nil
 }
 
 func (b *ChatBot) GetStockQuote(stockCode string) (string, error) {

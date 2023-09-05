@@ -30,28 +30,30 @@ type ChatRoom struct {
 
 func NewChatServer(userManager *user.UserManager, messageService *message.MessageService, chatBot *bot.ChatBot) *ChatServer {
 	return &ChatServer{
+		chatRooms:      map[string]*ChatRoom{},
+		upgrader:       websocket.Upgrader{},
 		userManager:    userManager,
 		messageService: messageService,
-		chatBot:        chatBot,
+		bot:            chatBot,
 	}
 }
 
-func NewChatServer() *ChatServer {
-	return &ChatServer{
-		chatRooms: make(map[string]*ChatRoom),
-		upgrader: websocket.Upgrader{
-			ReadBufferSize:  1024,
-			WriteBufferSize: 1024,
-		},
-	}
-}
+// func NewChatServer() *ChatServer {
+// 	return &ChatServer{
+// 		chatRooms: make(map[string]*ChatRoom),
+// 		upgrader: websocket.Upgrader{
+// 			ReadBufferSize:  1024,
+// 			WriteBufferSize: 1024,
+// 		},
+// 	}
+// }
 
 func (s *ChatServer) handleChat(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	roomName := vars["roomName"]
 
 	if _, ok := s.chatRooms[roomName]; !ok {
-		// Create a new chat room if it doesn't exist
+		// Create a new chat room if it doesn't exist\\\\\\\ZZZZZZZXXZ
 		s.chatRooms[roomName] = &ChatRoom{
 			Name:     roomName,
 			Messages: make([]*message.Message, 0),
@@ -81,7 +83,7 @@ func (s *ChatServer) handleChat(w http.ResponseWriter, r *http.Request) {
 
 		// Handle commands, e.g., /stock=stock_code
 		if messageContent[0] == '/' {
-			response := bot.RespondToCommand(messageContent)
+			response := s.bot.RespondToCommand(messageContent)
 			// Broadcast the bot's response to all clients
 			for client := range room.Clients {
 				err := client.WriteMessage(messageType, []byte(response))
@@ -92,8 +94,8 @@ func (s *ChatServer) handleChat(w http.ResponseWriter, r *http.Request) {
 			}
 		} else {
 			// Handle regular chat messages
-			sender := userManager.RegisterUser("Anonymous") // You can implement user authentication here
-			msg := messageService.SendMessage(sender.ID, room.Name, messageContent)
+			sender := s.userManager.RegisterUser("Anonymous") // You can implement user authentication here
+			msg := s.messageService.SendMessage(sender.ID, room.Name, messageContent)
 
 			// Broadcast the message to all clients
 			for client := range room.Clients {
